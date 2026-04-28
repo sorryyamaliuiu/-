@@ -4,31 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор Завдань</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root { --primary: #6c5ce7; --bg: #f9f9f9; }
-        body { font-family: sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .main-container { text-align: center; background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 400px; width: 90%; }
-        .welcome-image { width: 100%; max-width: 250px; border-radius: 15px; margin-bottom: 1rem; }
-        #getTaskBtn { background: var(--primary); color: white; border: none; padding: 12px 24px; font-size: 1.1rem; border-radius: 50px; cursor: pointer; width: 100%; }
-        #getTaskBtn:disabled { background: #b2bec3; cursor: not-allowed; }
+        /* Basic styling to ensure the hidden class works */
         .hidden { display: none; }
-        .task-card { margin-top: 2rem; padding: 1rem; border: 2px dashed var(--primary); border-radius: 15px; }
-        #taskImage { width: 100%; border-radius: 10px; }
+        .main-container { text-align: center; padding: 20px; font-family: sans-serif; }
+        .welcome-image { max-width: 200px; border-radius: 15px; }
+        .task-card { margin-top: 20px; padding: 20px; border: 2px solid #eee; border-radius: 15px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #007bff; color: white; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
-        <img src="IMG_7277.JPG.jpeg" alt="Вітання" class="welcome-image">
+        <img src="IMG_7227.png" alt="Вітання" class="welcome-image">
+
         <h1>Привіт! ✨</h1>
-        <p>У тебе є 3 спроби на сьогодні.</p>
+        <p class="description">Натисни кнопку, щоб отримати випадкове завдання на сьогодні.</p>
 
         <button id="getTaskBtn">Отримати картку</button>
 
         <div id="cardDisplay" class="hidden">
             <div class="task-card">
-                <img id="taskImage" src="" alt="Завдання">
-                <h2 id="taskTitle">Ваше завдання!</h2>
+                <img id="taskImage" src="" alt="Картка із завданням" style="max-width: 100%;">
+                <h2 id="taskTitle"></h2>
             </div>
         </div>
     </div>
@@ -37,44 +37,81 @@
         const getTaskBtn = document.getElementById('getTaskBtn');
         const cardDisplay = document.getElementById('cardDisplay');
         const taskImage = document.getElementById('taskImage');
+        const taskTitle = document.getElementById('taskTitle');
 
-        // These names now match your files exactly!
-        const taskImages = [
-            "IMG_7269.JPG.jpeg", "IMG_7270.JPG.jpeg", "IMG_7271.JPG.jpeg", 
-            "IMG_7272.JPG.jpeg", "IMG_7273.JPG.jpeg", "IMG_7274.JPG.jpeg",
-            "IMG_7275.JPG.jpeg", "IMG_7276.JPG.jpeg", "IMG_7278.JPG.jpeg", "IMG_7279.JPG.jpeg"
+        // Configuration: Add your image paths here
+        const tasks = [
+            { title: "Прогулянка 30 хвилин", img: "task1.png" },
+            { title: "Прочитати 10 сторінок", img: "task2.png" },
+            { title: "Випити склянку води", img: "task3.png" },
+            { title: "Зробити розминку", img: "task4.png" }
         ];
 
-        function getToday() { return new Date().toDateString(); }
-
-        function updateUI(count) {
-            const left = 3 - count;
-            getTaskBtn.innerText = left > 0 ? Отримати картку (Спроб: ${left}) : "Спроби вичерпано 🌙";
-            if (left <= 0) getTaskBtn.disabled = true;
+        function getTodayDateString() {
+            // Returns YYYY-MM-DD based on local time
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return ${year}-${month}-${day};
         }
 
-        getTaskBtn.addEventListener('click', () => {
-            let data = JSON.parse(localStorage.getItem('taskApp')) || { date: getToday(), count: 0 };
-            
-            if (data.date !== getToday()) data = { date: getToday(), count: 0 };
-
-            if (data.count < 3) {
-                const randomImg = taskImages[Math.floor(Math.random() * taskImages.length)];
-                taskImage.src = randomImg;
-                cardDisplay.classList.remove('hidden');
-                
-                data.count++;
-                localStorage.setItem('taskApp', JSON.stringify(data));
-                updateUI(data.count);
+        function updateUI(count) {
+            if (count >= 3) {
+                getTaskBtn.disabled = true;
+                getTaskBtn.innerText = "Спроби вичерпано (0 залишилось)";
+            } else {
+                getTaskBtn.innerText = Отримати картку (Спроб: ${3 - count});
             }
-        });
+        }
 
-        // Initialize
-        const saved = JSON.parse(localStorage.getItem('taskApp'));
-        updateUI(saved && saved.date === getToday() ? saved.count : 0);
-    </script>
-</body>
-</html>
+        function handleTaskRequest() {
+            const today = getTodayDateString();
+            let usageData = JSON.parse(localStorage.getItem('taskUsage')) || { date: today, count: 0 };
+
+            // Reset if the date in storage isn't today (Midnight passed)
+            if (usageData.date !== today) {
+                usageData = { date: today, count: 0 };
+            }
+
+            if (usageData.count >= 3) {
+                alert("Ви вже використали всі 3 спроби на сьогодні!");
+                return;
+            }
+
+            // --- Random Task Selection Logic ---
+            const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+            
+            taskTitle.innerText = randomTask.title;
+            taskImage.src = randomTask.img;
+            cardDisplay.classList.remove('hidden');
+            // ------------------------------------
+
+            // Save usage
+            usageData.count += 1;
+            localStorage.setItem('taskUsage', JSON.stringify(usageData));
+            
+            updateUI(usageData.count);
+        }
+
+        // Initialize state when page opens
+        window.onload = () => {
+            const today = getTodayDateString();
+            let usageData = JSON.parse(localStorage.getItem('taskUsage'));
+
+            if (usageData) {
+                if (usageData.date !== today) {
+                    // It's a new day, clear old data
+                    localStorage.removeItem('taskUsage');
+                    updateUI(0);
+                } else {
+                    updateUI(usageData.count);
+                }
+            } else {
+                updateUI(0);
+            }
+        };
+
         getTaskBtn.addEventListener('click', handleTaskRequest);
     </script>
 </body>

@@ -5,26 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор Завдань</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Basic styling to ensure the hidden class works */
+        .hidden { display: none; }
+        .main-container { text-align: center; padding: 20px; font-family: sans-serif; }
+        .welcome-image { max-width: 200px; border-radius: 15px; }
+        .task-card { margin-top: 20px; padding: 20px; border: 2px solid #eee; border-radius: 15px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background-color: #007bff; color: white; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
     <div class="main-container">
-        <img src="IMG_7227.PNG" alt="Вітання" class="welcome-image">
-        
+        <img src="IMG_7227.png" alt="Вітання" class="welcome-image">
+
         <h1>Привіт! ✨</h1>
         <p class="description">Натисни кнопку, щоб отримати випадкове завдання на сьогодні.</p>
-        
+
         <button id="getTaskBtn">Отримати картку</button>
 
         <div id="cardDisplay" class="hidden">
             <div class="task-card">
-                <img id="taskImage" src="" alt="Картка із завданням">
+                <img id="taskImage" src="" alt="Картка із завданням" style="max-width: 100%;">
                 <h2 id="taskTitle"></h2>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
-</body>
+    <script>
+        const getTaskBtn = document.getElementById('getTaskBtn');
+        const cardDisplay = document.getElementById('cardDisplay');
+        const taskImage = document.getElementById('taskImage');
+        const taskTitle = document.getElementById('taskTitle');
 
+        // Configuration: Add your image paths here
+        const tasks = [
+            { title: "Прогулянка 30 хвилин", img: "task1.png" },
+            { title: "Прочитати 10 сторінок", img: "task2.png" },
+            { title: "Випити склянку води", img: "task3.png" },
+            { title: "Зробити розминку", img: "task4.png" }
+        ];
+
+        function getTodayDateString() {
+            // Returns YYYY-MM-DD based on local time
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return ${year}-${month}-${day};
+        }
+
+        function updateUI(count) {
+            if (count >= 3) {
+                getTaskBtn.disabled = true;
+                getTaskBtn.innerText = "Спроби вичерпано (0 залишилось)";
+            } else {
+                getTaskBtn.innerText = Отримати картку (Спроб: ${3 - count});
+            }
+        }
+
+        function handleTaskRequest() {
+            const today = getTodayDateString();
+            let usageData = JSON.parse(localStorage.getItem('taskUsage')) || { date: today, count: 0 };
+
+            // Reset if the date in storage isn't today (Midnight passed)
+            if (usageData.date !== today) {
+                usageData = { date: today, count: 0 };
+            }
+
+            if (usageData.count >= 3) {
+                alert("Ви вже використали всі 3 спроби на сьогодні!");
+                return;
+            }
+
+            // --- Random Task Selection Logic ---
+            const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+            
+            taskTitle.innerText = randomTask.title;
+            taskImage.src = randomTask.img;
+            cardDisplay.classList.remove('hidden');
+            // ------------------------------------
+
+            // Save usage
+            usageData.count += 1;
+            localStorage.setItem('taskUsage', JSON.stringify(usageData));
+            
+            updateUI(usageData.count);
+        }
+
+        // Initialize state when page opens
+        window.onload = () => {
+            const today = getTodayDateString();
+            let usageData = JSON.parse(localStorage.getItem('taskUsage'));
+
+            if (usageData) {
+                if (usageData.date !== today) {
+                    // It's a new day, clear old data
+                    localStorage.removeItem('taskUsage');
+                    updateUI(0);
+                } else {
+                    updateUI(usageData.count);
+                }
+            } else {
+                updateUI(0);
+            }
+        };
+
+        getTaskBtn.addEventListener('click', handleTaskRequest);
+    </script>
+</body>
 </html>

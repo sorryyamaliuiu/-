@@ -1,3 +1,4 @@
+@@ -1,29 +1,30 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -5,13 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Генератор Завдань</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Adding basic styles here to ensure 'hidden' works if style.css is missing */
-        .hidden { display: none; }
-        .main-container { text-align: center; padding: 20px; font-family: sans-serif; }
-        .task-card img { max-width: 100%; border-radius: 10px; margin-top: 15px; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-    </style>
 </head>
 <body>
 
@@ -31,63 +25,8 @@
         </div>
     </div>
 
-    <script>
-        const getTaskBtn = document.getElementById('getTaskBtn');
-        const cardDisplay = document.getElementById('cardDisplay');
-        const taskImage = document.getElementById('taskImage');
-        const taskTitle = document.getElementById('taskTitle');
-
-        // These filenames match your GitHub images exactly
-        const images = [
-            "IMG_7269.JPG.jpeg", "IMG_7270.JPG.jpeg", "IMG_7271.JPG.jpeg", 
-            "IMG_7272.JPG.jpeg", "IMG_7273.JPG.jpeg", "IMG_7274.JPG.jpeg",
-            "IMG_7275.JPG.jpeg", "IMG_7276.JPG.jpeg", "IMG_7278.JPG.jpeg", "IMG_7279.JPG.jpeg"
-        ];
-
-        // This function creates a key based on the year, month, and day
-        // At midnight, the day changes, so the key changes, resetting the count to 0.
-        function getDailyKey() {
-            const d = new Date();
-            return "attempts_" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-        }
-
-        function updateUI() {
-            const key = getDailyKey();
-            const used = parseInt(localStorage.getItem(key)) || 0;
-            const remaining = 3 - used;
-
-            if (remaining <= 0) {
-                getTaskBtn.disabled = true;
-                getTaskBtn.innerText = "Спроби вичерпано (0 залишилось)";
-            } else {
-                getTaskBtn.innerText = Отримати картку (${remaining} спроб);
-            }
-        }
-
-        getTaskBtn.addEventListener('click', () => {
-            const key = getDailyKey();
-            let used = parseInt(localStorage.getItem(key)) || 0;
-
-            if (used < 3) {
-                // Pick a random image from the list
-                const randomImg = images[Math.floor(Math.random() * images.length)];
-                
-                // Update the screen
-                taskImage.src = randomImg;
-                taskTitle.innerText = "Твоє завдання на сьогодні!";
-                cardDisplay.classList.remove('hidden');
-
-                // Save the new count
-                used++;
-                localStorage.setItem(key, used);
-                
-                // Update button text
-                updateUI();
-            }
-        });
-
-        // Run when the page opens
-        updateUI();
-    </script>
+    <script src="script.js"></script>
 </body>
+</html>
+
 </html>

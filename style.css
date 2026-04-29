@@ -10,7 +10,14 @@ body {
 }
 
 .main-container {
-    background: white;
+    /* Replace 'white' with your image link */
+    background-image: url('IMG_9618.PNG'); 
+    
+    /* This ensures the photo fills the container perfectly */
+    background-size: cover;
+    background-position: center;
+
+    /* Your original settings */
     padding: 40px;
     border-radius: 30px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.1);

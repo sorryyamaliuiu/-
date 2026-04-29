@@ -49,13 +49,11 @@ const img = document.getElementById('taskImage');
 const title = document.getElementById('taskTitle');
 const attemptsText = document.getElementById('attemptsText');
 
-// 2. Функція перевірки ліміту (3 спроби на добу)
 function checkDailyLimit() {
     const today = new Date().toLocaleDateString();
     const lastDate = localStorage.getItem('task_date');
     let attempts = parseInt(localStorage.getItem('task_attempts')) || 0;
 
-    // Якщо настав новий день, скидаємо лічильник
     if (lastDate !== today) {
         attempts = 0;
         localStorage.setItem('task_attempts', 0);
@@ -64,36 +62,45 @@ function checkDailyLimit() {
     return attempts;
 }
 
-// 3. Обробник натискання кнопки
 btn.addEventListener('click', () => {
     let currentAttempts = checkDailyLimit();
-    
-    // Перевіряємо, чи картка ВЖЕ показана
     const isCardVisible = !display.classList.contains('hidden');
 
-    // Якщо картка вже була на екрані, це рахується як "Хочу ще одну спробу"
     if (isCardVisible) {
-        if (currentAttempts >= 3) return; // Захист від зайвих натискань
-
+        if (currentAttempts >= 3) return;
         currentAttempts++;
         localStorage.setItem('task_attempts', currentAttempts);
     }
 
-    // Випадковий вибір завдання
-    const index = Math.floor(Math.random() * myTasks.length);
-    const result = myTasks[index];
+    // ЛОГІКА УНІКАЛЬНОСТІ: Отримуємо список вже бачених картинок
+    let seenTasks = JSON.parse(localStorage.getItem('seen_tasks')) || [];
 
-    // Оновлення картки
+    // Залишаємо тільки ті, які користувач ще НЕ бачив
+    let availableTasks = myTasks.filter(t => !seenTasks.includes(t.kartka));
+
+    // Якщо раптом усі 41 завдання закінчилися, скидаємо список бачених, щоб почати спочатку
+    if (availableTasks.length === 0) {
+        seenTasks = [];
+        availableTasks = myTasks;
+    }
+
+    // Вибираємо випадкову картинку з доступних
+    const index = Math.floor(Math.random() * availableTasks.length);
+    const result = availableTasks[index];
+
+    // Додаємо цю картинку в список "бачених"
+    seenTasks.push(result.kartka);
+    localStorage.setItem('seen_tasks', JSON.stringify(seenTasks));
+
+    // Оновлюємо екран
     title.textContent = result.nazva;
     img.src = result.kartka;
     display.classList.remove('hidden');
 
-    // Оновлення тексту спроб під кнопкою (якщо додали цей елемент в HTML)
     if (attemptsText) {
         attemptsText.textContent = `Залишилося спроб: ${3 - currentAttempts}`;
     }
 
-    // Оновлення стану кнопки
     if (currentAttempts < 3) {
         btn.textContent = "Хочу ще одну спробу";
     } else {
@@ -103,13 +110,11 @@ btn.addEventListener('click', () => {
     }
 });
 
-// Перевірка стану при завантаженні сторінки
 window.onload = () => {
     const startAttempts = checkDailyLimit();
     if (attemptsText) {
         attemptsText.textContent = `Залишилося спроб: ${3 - startAttempts}`;
     }
-    
     if (startAttempts >= 3) {
         btn.textContent = "Ліміт вичерпано";
         btn.disabled = true;

@@ -1,4 +1,4 @@
-// 1. Full list of your task cards
+// 1. Повний список ваших карток (41 завдання)
 const myTasks = [
     { nazva: "Завдання №1", kartka: "IMG_7172.JPG.jpeg" },
     { nazva: "Завдання №2", kartka: "IMG_7173.JPG.jpeg" },
@@ -49,13 +49,13 @@ const img = document.getElementById('taskImage');
 const title = document.getElementById('taskTitle');
 const attemptsText = document.getElementById('attemptsText');
 
-// 2. Логіка ліміту: перевірка дати та спроб у localStorage
+// 2. Функція перевірки ліміту (3 спроби на добу)
 function checkDailyLimit() {
     const today = new Date().toLocaleDateString();
     const lastDate = localStorage.getItem('task_date');
     let attempts = parseInt(localStorage.getItem('task_attempts')) || 0;
 
-    // Скидання о півночі
+    // Якщо настав новий день, скидаємо лічильник
     if (lastDate !== today) {
         attempts = 0;
         localStorage.setItem('task_attempts', 0);
@@ -67,17 +67,19 @@ function checkDailyLimit() {
 // 3. Обробник натискання кнопки
 btn.addEventListener('click', () => {
     let currentAttempts = checkDailyLimit();
+    
+    // Перевіряємо, чи картка ВЖЕ показана
     const isCardVisible = !display.classList.contains('hidden');
 
-    // Якщо картка вже видима, це рахується як платна спроба (з 3-х можливих)
+    // Якщо картка вже була на екрані, це рахується як "Хочу ще одну спробу"
     if (isCardVisible) {
-        if (currentAttempts >= 3) return; 
+        if (currentAttempts >= 3) return; // Захист від зайвих натискань
 
         currentAttempts++;
         localStorage.setItem('task_attempts', currentAttempts);
     }
 
-    // Отримання випадкового завдання
+    // Випадковий вибір завдання
     const index = Math.floor(Math.random() * myTasks.length);
     const result = myTasks[index];
 
@@ -86,9 +88,12 @@ btn.addEventListener('click', () => {
     img.src = result.kartka;
     display.classList.remove('hidden');
 
-    // Оновлення інтерфейсу
-    attemptsText.textContent = `Залишилося спроб: ${3 - currentAttempts}`;
+    // Оновлення тексту спроб під кнопкою (якщо додали цей елемент в HTML)
+    if (attemptsText) {
+        attemptsText.textContent = `Залишилося спроб: ${3 - currentAttempts}`;
+    }
 
+    // Оновлення стану кнопки
     if (currentAttempts < 3) {
         btn.textContent = "Хочу ще одну спробу";
     } else {
@@ -98,10 +103,12 @@ btn.addEventListener('click', () => {
     }
 });
 
-// Перевірка при завантаженні сторінки (якщо користувач повернувся пізніше)
+// Перевірка стану при завантаженні сторінки
 window.onload = () => {
     const startAttempts = checkDailyLimit();
-    attemptsText.textContent = `Залишилося спроб: ${3 - startAttempts}`;
+    if (attemptsText) {
+        attemptsText.textContent = `Залишилося спроб: ${3 - startAttempts}`;
+    }
     
     if (startAttempts >= 3) {
         btn.textContent = "Ліміт вичерпано";
